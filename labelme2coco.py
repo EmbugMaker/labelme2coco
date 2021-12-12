@@ -7,11 +7,19 @@ from labelme2coco_util import tqdm
 
 
 class labelme2coco:
-    def __init__(self, coco_dir, labelme_dir, classes, val_size_ratio=0.3):
-        __ratio = val_size_ratio
+    def __init__(self, coco_dir, labelme_dir, classes, val_training_ratio=0.3, is_bbox=True):
+        """
+        :param coco_dir(str): your_own_coco_path
+        :param labelme_dir(str): the_path_of_the_image_marked_by_labelme_and_the_generated_json_file
+        :param classes(dict): object classes (background_included)
+        :param val_training_ratio: Ratio of validation set to training set
+        :param is_bbox: Whether to use the bounding box to mark the object（bbox-->True; others-->False）
+        """
+        __ratio = val_training_ratio
         self.labelme_dir = labelme_dir
         self.classes = classes
         self.coco_dir = coco_dir
+        self.is_bbox = is_bbox
         self.sub_dir = ('annotations', 'train2017', 'val2017')
         self.coco_path = {self.sub_dir[0]: os.path.join(coco_dir, self.sub_dir[0]),
                           self.sub_dir[1]: os.path.join(coco_dir, self.sub_dir[1]),
@@ -48,11 +56,13 @@ class labelme2coco:
 
         train_json = to_coco(__train_json_paths,
                              self.coco_path['annotations'] + '/instances_train2017.json',
-                             self.classes)
+                             self.classes,
+                             self.is_bbox)
         train_json.save_json()
         val_json = to_coco(__val_json_paths,
                            self.coco_path['annotations'] + '/instances_val2017.json',
-                           self.classes)
+                           self.classes,
+                           self.is_bbox)
         val_json.save_json()
         print("\nDone!")
 
@@ -63,6 +73,6 @@ if __name__ == '__main__':
     # Specify the path of the COCO file you want to generate
     coco_path = './coco/2017'
     # The path of the image marked by labelme and the generated json file
-    labelme_json_path = './enhance_imgs_and_marks'
-    convert = labelme2coco(coco_dir=coco_path, labelme_dir=labelme_json_path, classes=object_classes)
+    labelme_path = './enhance_imgs_and_marks'
+    convert = labelme2coco(coco_dir=coco_path, labelme_dir=labelme_path, classes=object_classes)
     convert.convert2coco()
